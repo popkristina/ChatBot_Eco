@@ -12,16 +12,21 @@ from langchain.schema import StrOutputParser
 
 app = FastAPI()
 
-llm = ChatGroq(temperature=0,
-               model_name="mixtral-8x7b-32768",
-               groq_api_key="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")
+llm = ChatGroq(
+    temperature=0,
+    model_name="mixtral-8x7b-32768",
+    groq_api_key=os.environ["GROQ_API_KEY"])
 
 embeddings_model = CohereEmbeddings(
     model="embed-english-v3.0",
-    api_key=os.environ["COHERE_API_KEY"]
+    cohere_api_key=os.environ["COHERE_API_KEY"]
 )
 
-faiss_index = FAISS.load_local("../langserve_index", embeddings_model)
+faiss_index = FAISS.load_local(
+    "./langserve_index",
+    embeddings_model,
+    allow_dangerous_deserialization=True)
+
 retriever = faiss_index.as_retriever()
 
 prompt_template = """\
