@@ -1,5 +1,6 @@
 import os
 from fastapi import FastAPI
+import langserve
 from fastapi.responses import RedirectResponse
 from langserve import add_routes
 from langchain.vectorstores import FAISS
@@ -23,7 +24,7 @@ embeddings_model = CohereEmbeddings(
 )
 
 faiss_index = FAISS.load_local(
-    "./langserve_index",
+    "./langserve_index", #"../langserve_index",
     embeddings_model,
     allow_dangerous_deserialization=True)
 
@@ -52,11 +53,13 @@ rag_chain = entry_point_chain | rag_prompt | llm | StrOutputParser()
 async def redirect_root_to_docs():
     return RedirectResponse("/docs")
 
-
-# Edit this to add the chain you want to add
+# Add rag chain to a route
 add_routes(app, rag_chain, path='/rag')
+
+# Add Mixtral model to a route
+add_routes(app, llm, path='/mixtral')
 
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="localhost", port=8000)
